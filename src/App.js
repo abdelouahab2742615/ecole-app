@@ -9,6 +9,7 @@ import EquipmentForm from "./pages/EquipmentForm";
 import RolesList from "./pages/RolesList";
 import RoleForm from "./pages/RoleForm";
 
+// test modification Farhat
 function App() {
   return (
     <BrowserRouter>
