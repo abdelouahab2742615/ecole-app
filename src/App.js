@@ -8,9 +8,9 @@ function App() {
 
   return (
     <div>
-      <button onClick={() => setPage("login")}>Login</button>
-      <button onClick={() => setPage("register")}>Register</button>
-      <button onClick={() => setPage("department")}>Departments</button>
+      <button onClick={() => setPage("login")}>Se connecter</button>
+      <button onClick={() => setPage("register")}>Registre</button>
+      <button onClick={() => setPage("department")}>Départements</button>
 
       {page === "login" ? (
         <Login onLoginSuccess={() => setPage("department")} />
