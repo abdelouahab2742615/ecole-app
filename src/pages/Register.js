@@ -16,7 +16,7 @@ function Register() {
     setSuccess("");
 
     try {
-      const response = await API.post("/api/users", {
+      const response = await API.post("/users", {
         nom,
         prenom,
         email,
@@ -24,21 +24,30 @@ function Register() {
         date_de_naissance: dateNaissance,
       });
 
-      setSuccess("Utilisateur cree avec succes");
+      setSuccess("Utilisateur créé avec succès");
       console.log("Success:", response.data);
+
+      // reset formulaire (optionnel mais pro)
+      setNom("");
+      setPrenom("");
+      setEmail("");
+      setPassword("");
+      setDateNaissance("");
+
     } catch (error) {
       setErreur(
         error.response?.data?.message ||
         error.response?.data?.errors?.[0]?.msg ||
         "Erreur d'inscription"
       );
+
       console.log("Erreur:", error.response?.data);
     }
   };
 
   return (
-    <div>
-      <h2>Register</h2>
+    <div style={{ maxWidth: "400px", margin: "auto" }}>
+      <h2>Inscription</h2>
 
       <form onSubmit={handleSubmit}>
         <div>
@@ -72,7 +81,7 @@ function Register() {
         </div>
 
         <div>
-          <label>Password :</label>
+          <label>Mot de passe :</label>
           <input
             type="password"
             value={password}
@@ -94,7 +103,9 @@ function Register() {
         {erreur && <p style={{ color: "red" }}>{erreur}</p>}
         {success && <p style={{ color: "green" }}>{success}</p>}
 
-        <button type="submit">S'inscrire</button>
+        <button type="submit" style={{ marginTop: "10px" }}>
+          S'inscrire
+        </button>
       </form>
     </div>
   );

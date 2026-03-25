@@ -1,18 +1,12 @@
-import API from "../services/api";
 import React, { useState } from "react";
-
-function Login({ onLoginSuccess }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [erreur, setErreur] = useState("");
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function Login() {
   const [email, setEmail] = useState("");
-  const [mot_de_passe, setMotDePasse] = useState("");
+  const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState("");
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -20,61 +14,31 @@ function Login() {
     setErreur("");
 
     try {
-      const response = await API.post("/api/login", {
+      const response = await API.post("/login", {
         email,
-        mot_de_passe: password,
+        mot_de_passe: motDePasse,
       });
 
+      // Sauvegarder le token
       localStorage.setItem("token", response.data.token);
+
       console.log("Success:", response.data);
 
-      if (onLoginSuccess) {
-        onLoginSuccess();
-      }
+      // Redirection après login
+      navigate("/departments");
+
     } catch (error) {
       setErreur(
         error.response?.data?.message ||
         error.response?.data?.errors?.[0]?.msg ||
-        "Erreur de connexion"
+        "Email ou mot de passe incorrect"
       );
-      console.log("Erreur:", error.response?.data);
-      const res = await API.post("/login", { email, mot_de_passe });
 
-      localStorage.setItem("token", res.data.token);
-      navigate("/roles");
-    } catch (error) {
-      setErreur("Email ou mot de passe incorrect");
+      console.log("Erreur:", error.response?.data);
     }
   };
 
   return (
-    <div>
-      <h2>Se connecter</h2>
-
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>E-mail :</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <label>Mot de passe :</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-
-        {erreur && <p style={{ color: "red" }}>{erreur}</p>}
-
-        <button type="submit">Se connecter</button>
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.card}>
         <h2>Connexion</h2>
@@ -83,7 +47,7 @@ function Login() {
 
         <input
           type="email"
-          placeholder="Email"
+          placeholder="E-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           style={styles.input}
@@ -93,7 +57,7 @@ function Login() {
         <input
           type="password"
           placeholder="Mot de passe"
-          value={mot_de_passe}
+          value={motDePasse}
           onChange={(e) => setMotDePasse(e.target.value)}
           style={styles.input}
           required
@@ -128,6 +92,7 @@ const styles = {
     padding: "10px",
     borderRadius: "8px",
     border: "1px solid #ccc",
+    boxSizing: "border-box",
   },
   button: {
     width: "100%",
@@ -140,6 +105,7 @@ const styles = {
   },
   error: {
     color: "red",
+    marginBottom: "10px",
   },
 };
 

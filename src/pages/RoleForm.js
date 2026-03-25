@@ -10,24 +10,24 @@ function RoleForm() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => {
-        if (id) {
-            fetchRole();
-        }
-    }, [id]);
-
   const fetchRole = async () => {
     try {
       const res = await API.get(`/roles/${id}`);
       const role = res.data.data || res.data;
+
       setTitre(role.titre || "");
       setDescription(role.description || "");
     } catch (error) {
-      setErreur("Impossible de charger le role");
+      console.log("Erreur chargement :", error.response?.data);
+      setErreur("Impossible de charger le rôle");
     }
   };
+
+  useEffect(() => {
+    if (id) {
+      fetchRole();
+    }
+  }, [id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,25 +38,35 @@ function RoleForm() {
       return;
     }
 
-    try {
-      const body = { titre, description };
+    const body = {
+      titre,
+      description,
+    };
 
+    try {
       if (id) {
-        await API.put(`/roles/${id}`, body);
+        const res = await API.put(`/roles/${id}`, body);
+        console.log("Update success :", res.data);
       } else {
-        await API.post("/roles", body);
+        const res = await API.post("/roles", body);
+        console.log("Create success :", res.data);
       }
 
       navigate("/roles");
     } catch (error) {
-      setErreur("Erreur lors de l'enregistrement");
+      console.log("Erreur enregistrement :", error.response?.data);
+      setErreur(
+        error.response?.data?.message ||
+          error.response?.data?.errors?.[0]?.msg ||
+          "Erreur lors de l'enregistrement"
+      );
     }
   };
 
   return (
     <div className="form-wrapper">
       <form onSubmit={handleSubmit} className="form-card">
-        <h2>{id ? "Modifier le role" : "Ajouter un role"}</h2>
+        <h2>{id ? "Modifier le rôle" : "Ajouter un rôle"}</h2>
 
         {erreur && <p className="error-text">{erreur}</p>}
 
@@ -66,6 +76,7 @@ function RoleForm() {
           value={titre}
           onChange={(e) => setTitre(e.target.value)}
           className="input-control"
+          required
         />
 
         <textarea

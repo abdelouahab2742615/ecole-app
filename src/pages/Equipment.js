@@ -7,7 +7,6 @@ function Equipment() {
   const [nom, setNom] = useState("");
   const [modele, setModele] = useState("");
   const [description, setDescription] = useState("");
-  const [laboratoryId, setLaboratoryId] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [erreur, setErreur] = useState("");
   const [success, setSuccess] = useState("");
@@ -19,7 +18,7 @@ function Equipment() {
   const fetchEquipments = async () => {
     try {
       const res = await API.get("/equipment");
-      const data = res.data.data?.equipments || [];
+      const data = res.data.data?.equipments || res.data.data || res.data || [];
       setEquipments(Array.isArray(data) ? data : []);
     } catch (error) {
       setErreur("Impossible de charger les équipements");
@@ -31,7 +30,6 @@ function Equipment() {
     setNom("");
     setModele("");
     setDescription("");
-    setLaboratoryId("");
     setEditingId(null);
     setErreur("");
     setSuccess("");
@@ -51,7 +49,6 @@ function Equipment() {
       nom,
       modele,
       description,
-      LaboratoryId: laboratoryId ? Number(laboratoryId) : null,
     };
 
     try {
@@ -74,7 +71,6 @@ function Equipment() {
     setNom(item.nom || "");
     setModele(item.modele || "");
     setDescription(item.description || "");
-    setLaboratoryId(item.LaboratoryId || "");
     setEditingId(item.id);
     setErreur("");
     setSuccess("");
@@ -139,16 +135,6 @@ function Equipment() {
               />
             </div>
 
-            <div className="form-group">
-              <label>Laboratory ID</label>
-              <input
-                type="number"
-                placeholder="Ex: 1"
-                value={laboratoryId}
-                onChange={(e) => setLaboratoryId(e.target.value)}
-              />
-            </div>
-
             <div className="form-actions">
               <button type="submit" className="btn btn-primary">
                 {editingId ? "Mettre à jour" : "Ajouter"}
@@ -184,10 +170,6 @@ function Equipment() {
 
                   <p className="item-description">
                     <strong>Description :</strong> {item.description || "Aucune description"}
-                  </p>
-
-                  <p className="item-description">
-                    <strong>Laboratory ID :</strong> {item.LaboratoryId || "-"}
                   </p>
 
                   <div className="item-actions">

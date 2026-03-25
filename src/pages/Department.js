@@ -12,10 +12,10 @@ function Department() {
 
   const loadDepartments = async () => {
     try {
-      const response = await API.get("/api/departments");
+      const response = await API.get("/departments");
       console.log("Departments:", response.data);
 
-      setDepartments(response.data.data.departments);
+      setDepartments(response.data.data?.departments || response.data || []);
     } catch (error) {
       console.log("Erreur:", error.response?.data);
       setErreur("Erreur de chargement");
@@ -41,14 +41,14 @@ function Department() {
 
     try {
       if (editingId) {
-        await API.put(`/api/departments/${editingId}`, {
+        await API.put(`/departments/${editingId}`, {
           nom,
           domaine,
           histoire,
         });
         setSuccess("Departement modifie avec succes");
       } else {
-        await API.post("/api/departments", {
+        await API.post("/departments", {
           nom,
           domaine,
           histoire,
@@ -82,7 +82,7 @@ function Department() {
     setSuccess("");
 
     try {
-      await API.delete(`/api/departments/${id}`);
+      await API.delete(`/departments/${id}`);
       setSuccess("Departement supprime avec succes");
       loadDepartments();
     } catch (error) {

@@ -13,9 +13,11 @@ function RolesList() {
   const fetchRoles = async () => {
     try {
       const res = await API.get("/roles");
-      setRoles(res.data.data || res.data);
+      const data = res.data.data || res.data || [];
+      setRoles(Array.isArray(data) ? data : []);
     } catch (error) {
       setErreur("Erreur lors du chargement des roles");
+      setRoles([]);
     }
   };
 
@@ -35,28 +37,34 @@ function RolesList() {
     <div className="page-container">
       <div className="page-header">
         <h2>Liste des roles</h2>
-        <Link to="/roles/add" className="btn-primary">Ajouter un role</Link>
+        <Link to="/roles/new" className="btn-primary">
+          Ajouter un role
+        </Link>
       </div>
 
       {erreur && <p className="error-text">{erreur}</p>}
 
-      <div className="card-grid">
-        {roles.map((role) => (
-          <div key={role.id} className="card-item">
-            <h3>{role.titre}</h3>
-            <p>{role.description}</p>
+      {roles.length === 0 ? (
+        <p>Aucun role trouvé</p>
+      ) : (
+        <div className="card-grid">
+          {roles.map((role) => (
+            <div key={role.id} className="card-item">
+              <h3>{role.titre}</h3>
+              <p>{role.description}</p>
 
-            <div className="card-actions">
-              <Link to={`/roles/edit/${role.id}`} className="btn-edit">
-                Modifier
-              </Link>
-              <button onClick={() => deleteRole(role.id)} className="btn-delete">
-                Supprimer
-              </button>
+              <div className="card-actions">
+                <Link to={`/roles/edit/${role.id}`} className="btn-edit">
+                  Modifier
+                </Link>
+                <button onClick={() => deleteRole(role.id)} className="btn-delete">
+                  Supprimer
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
