@@ -1,5 +1,8 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import "./App.css";
+import Navbar from "./components/Navbar";
 
 import Subject from "./pages/Subject";
 import Laboratory from "./pages/Laboratory";
@@ -14,53 +17,29 @@ import RoleForm from "./pages/RoleForm";
 function App() {
   return (
     <BrowserRouter>
-      <div>
-        <Link to="/login">
-          <button>Se connecter</button>
-        </Link>
+      <div className="app-shell">
+        <Navbar />
 
-        <Link to="/register">
-          <button>Registre</button>
-        </Link>
+        <main className="app-main">
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/departments" element={<Department />} />
 
-        <Link to="/departments">
-          <button>Départements</button>
-        </Link>
+            <Route path="/equipment" element={<EquipmentList />} />
+            <Route path="/equipment/new" element={<EquipmentForm />} />
+            <Route path="/equipment/edit/:id" element={<EquipmentForm />} />
 
-        <Link to="/equipment">
-          <button>Équipements</button>
-        </Link>
+            <Route path="/roles" element={<RolesList />} />
+            <Route path="/roles/new" element={<RoleForm />} />
+            <Route path="/roles/edit/:id" element={<RoleForm />} />
 
-        <Link to="/roles">
-          <button>Rôles</button>
-        </Link>
-
-        <Link to="/subjects">
-          <button>Subjects</button>
-        </Link>
-
-        <Link to="/laboratories">
-          <button>Laboratories</button>
-        </Link>
+            <Route path="/subjects" element={<Subject />} />
+            <Route path="/laboratories" element={<Laboratory />} />
+          </Routes>
+        </main>
       </div>
-
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/departments" element={<Department />} />
-
-        <Route path="/equipment" element={<EquipmentList />} />
-        <Route path="/equipment/new" element={<EquipmentForm />} />
-        <Route path="/equipment/edit/:id" element={<EquipmentForm />} />
-
-        <Route path="/roles" element={<RolesList />} />
-        <Route path="/roles/new" element={<RoleForm />} />
-        <Route path="/roles/edit/:id" element={<RoleForm />} />
-
-        <Route path="/subjects" element={<Subject />} />
-        <Route path="/laboratories" element={<Laboratory />} />
-      </Routes>
     </BrowserRouter>
   );
 }

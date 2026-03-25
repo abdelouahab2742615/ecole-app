@@ -12,17 +12,18 @@ function RolesList() {
 
   const fetchRoles = async () => {
     try {
+      setErreur("");
       const res = await API.get("/roles");
       const data = res.data.data || res.data || [];
       setRoles(Array.isArray(data) ? data : []);
     } catch (error) {
-      setErreur("Erreur lors du chargement des roles");
+      setErreur("Erreur lors du chargement des rôles");
       setRoles([]);
     }
   };
 
   const deleteRole = async (id) => {
-    const ok = window.confirm("Supprimer ce role ?");
+    const ok = window.confirm("Supprimer ce rôle ?");
     if (!ok) return;
 
     try {
@@ -34,37 +35,52 @@ function RolesList() {
   };
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <h2>Liste des roles</h2>
-        <Link to="/roles/new" className="btn-primary">
-          Ajouter un role
-        </Link>
-      </div>
-
-      {erreur && <p className="error-text">{erreur}</p>}
-
-      {roles.length === 0 ? (
-        <p>Aucun role trouvé</p>
-      ) : (
-        <div className="card-grid">
-          {roles.map((role) => (
-            <div key={role.id} className="card-item">
-              <h3>{role.titre}</h3>
-              <p>{role.description}</p>
-
-              <div className="card-actions">
-                <Link to={`/roles/edit/${role.id}`} className="btn-edit">
-                  Modifier
-                </Link>
-                <button onClick={() => deleteRole(role.id)} className="btn-delete">
-                  Supprimer
-                </button>
-              </div>
-            </div>
-          ))}
+    <div className="crud-page">
+      <div className="crud-container">
+        <div className="crud-header">
+          <h1>Liste des rôles</h1>
+          <p>Gérez les rôles utilisateur avec une présentation plus moderne.</p>
         </div>
-      )}
+
+        <div className="top-action-bar">
+          <Link to="/roles/new" className="btn btn-primary">
+            Ajouter un rôle
+          </Link>
+        </div>
+
+        {erreur && <div className="alert alert-error">{erreur}</div>}
+
+        {roles.length === 0 ? (
+          <div className="crud-card">
+            <div className="empty-state">Aucun rôle trouvé.</div>
+          </div>
+        ) : (
+          <div className="card-list">
+            {roles.map((role) => (
+              <div key={role.id} className="info-card">
+                <div className="info-card-header">
+                  <h3>{role.titre}</h3>
+                  <span className="badge-soft">ID: {role.id}</span>
+                </div>
+
+                <p className="card-description">{role.description || "Aucune description"}</p>
+
+                <div className="card-actions-row">
+                  <Link to={`/roles/edit/${role.id}`} className="btn btn-warning">
+                    Modifier
+                  </Link>
+                  <button
+                    onClick={() => deleteRole(role.id)}
+                    className="btn btn-danger"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

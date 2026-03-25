@@ -13,10 +13,8 @@ function Department() {
   const loadDepartments = async () => {
     try {
       const response = await API.get("/departments");
-      console.log("Departments:", response.data);
       setDepartments(response.data.data?.departments || response.data || []);
     } catch (error) {
-      console.log("Erreur:", error.response?.data);
       setErreur("Erreur de chargement");
       setDepartments([]);
     }
@@ -31,6 +29,8 @@ function Department() {
     setDomaine("");
     setHistoire("");
     setEditingId(null);
+    setErreur("");
+    setSuccess("");
   };
 
   const handleSubmit = async (e) => {
@@ -39,7 +39,6 @@ function Department() {
     setSuccess("");
 
     const domaineNettoye = domaine.trim().toLowerCase();
-
     let domaineFinal = domaineNettoye;
 
     if (domaineNettoye === "litterature") {
@@ -51,7 +50,7 @@ function Department() {
       domaineFinal !== "littérature" &&
       domaineFinal !== "autre"
     ) {
-      setErreur("le domaine doit être sciences, littérature ou autre");
+      setErreur("Le domaine doit être sciences, littérature ou autre");
       return;
     }
 
@@ -64,20 +63,19 @@ function Department() {
 
       if (editingId) {
         await API.put(`/departments/${editingId}`, data);
-        setSuccess("Departement modifie avec succes");
+        setSuccess("Département modifié avec succès");
       } else {
         await API.post("/departments", data);
-        setSuccess("Departement ajoute avec succes");
+        setSuccess("Département ajouté avec succès");
       }
 
       resetForm();
       loadDepartments();
     } catch (error) {
-      console.log("Erreur:", error.response?.data);
       setErreur(
         error.response?.data?.message ||
           error.response?.data?.errors?.[0]?.msg ||
-          "Erreur sur le departement"
+          "Erreur sur le département"
       );
     }
   };
@@ -92,114 +90,144 @@ function Department() {
   };
 
   const handleDelete = async (id) => {
+    const ok = window.confirm("Voulez-vous vraiment supprimer ce département ?");
+    if (!ok) return;
+
     setErreur("");
     setSuccess("");
 
     try {
       await API.delete(`/departments/${id}`);
-      setSuccess("Departement supprime avec succes");
+      setSuccess("Département supprimé avec succès");
       loadDepartments();
     } catch (error) {
-      console.log("Erreur:", error.response?.data);
       setErreur("Erreur de suppression");
     }
   };
 
   return (
-    <div>
-      <h2>Départements</h2>
-
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nom :</label>
-          <input
-            type="text"
-            value={nom}
-            onChange={(e) => setNom(e.target.value)}
-            required
-          />
+    <div className="crud-page">
+      <div className="crud-container">
+        <div className="crud-header">
+          <h1>Départements</h1>
+          <p>Gérez les départements de l'application avec une interface claire et moderne.</p>
         </div>
 
-        <div>
-          <label>Domaine :</label>
-          <select
-            value={domaine}
-            onChange={(e) => setDomaine(e.target.value)}
-            required
-          >
-            <option value="">Choisir un domaine</option>
-            <option value="sciences">sciences</option>
-            <option value="littérature">littérature</option>
-            <option value="autre">autre</option>
-          </select>
+        <div className="crud-card">
+          <h2>{editingId ? "Modifier un département" : "Ajouter un département"}</h2>
+
+          <form onSubmit={handleSubmit} className="crud-form">
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Nom</label>
+                <input
+                  type="text"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  placeholder="Nom du département"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Domaine</label>
+                <select
+                  value={domaine}
+                  onChange={(e) => setDomaine(e.target.value)}
+                  required
+                >
+                  <option value="">Choisir un domaine</option>
+                  <option value="sciences">Sciences</option>
+                  <option value="littérature">Littérature</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Histoire</label>
+              <textarea
+                rows="4"
+                value={histoire}
+                onChange={(e) => setHistoire(e.target.value)}
+                placeholder="Ajoutez une description ou l'histoire du département"
+              />
+            </div>
+
+            {erreur && <div className="alert alert-error">{erreur}</div>}
+            {success && <div className="alert alert-success">{success}</div>}
+
+            <div className="crud-actions">
+              <button type="submit" className="btn btn-primary">
+                {editingId ? "Modifier" : "Ajouter"}
+              </button>
+
+              {editingId && (
+                <button type="button" onClick={resetForm} className="btn btn-secondary">
+                  Annuler
+                </button>
+              )}
+            </div>
+          </form>
         </div>
 
-        <div>
-          <label>Histoire :</label>
-          <textarea
-            value={histoire}
-            onChange={(e) => setHistoire(e.target.value)}
-          ></textarea>
+        <div className="crud-card">
+          <div className="section-title">
+            <h2>Liste des départements</h2>
+            <span className="badge-count">{departments.length}</span>
+          </div>
+
+          {departments.length === 0 ? (
+            <div className="empty-state">Aucun département trouvé.</div>
+          ) : (
+            <div className="table-wrapper">
+              <table className="modern-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Domaine</th>
+                    <th>Histoire</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {departments.map((department) => {
+                    const departmentId = department.id || department._id;
+
+                    return (
+                      <tr key={departmentId}>
+                        <td>{departmentId}</td>
+                        <td>{department.nom}</td>
+                        <td>{department.domaine}</td>
+                        <td>{department.histoire || "-"}</td>
+                        <td>
+                          <div className="table-actions">
+                            <button
+                              type="button"
+                              onClick={() => handleEdit(department)}
+                              className="btn btn-warning btn-xs"
+                            >
+                              Modifier
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(departmentId)}
+                              className="btn btn-danger btn-xs"
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-
-        {erreur && <p style={{ color: "red" }}>{erreur}</p>}
-        {success && <p style={{ color: "green" }}>{success}</p>}
-
-        <button type="submit">
-          {editingId ? "Modifier" : "Ajouter"}
-        </button>
-
-        {editingId && (
-          <button type="button" onClick={resetForm}>
-            Annuler
-          </button>
-        )}
-      </form>
-
-      <hr />
-
-      <h3>Liste des départements</h3>
-
-      {departments.length === 0 ? (
-        <p>Aucun département</p>
-      ) : (
-        <table border="1" cellPadding="8">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nom</th>
-              <th>Domaine</th>
-              <th>Histoire</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {departments.map((department) => {
-              const departmentId = department.id || department._id;
-
-              return (
-                <tr key={departmentId}>
-                  <td>{departmentId}</td>
-                  <td>{department.nom}</td>
-                  <td>{department.domaine}</td>
-                  <td>{department.histoire}</td>
-                  <td>
-                    <button type="button" onClick={() => handleEdit(department)}>
-                      Modifier
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(departmentId)}
-                    >
-                      Supprimer
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
+      </div>
     </div>
   );
 }

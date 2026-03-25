@@ -1,111 +1,157 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import API from "../services/api";
+import "./CrudPage.css";
 
 function EquipmentForm() {
   const [nom, setNom] = useState("");
-  const [modele, setModele] = useState("nouveau");
+  const [modele, setModele] = useState("");
   const [description, setDescription] = useState("");
+  const [laboratories, setLaboratories] = useState([]);
+  const [laboratoryId, setLaboratoryId] = useState("");
+
   const [erreur, setErreur] = useState("");
+  const [success, setSuccess] = useState("");
 
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const fetchEquipment = async () => {
+  useEffect(() => {
+    chargerLaboratoires();
+    if (id) chargerEquipment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const chargerLaboratoires = async () => {
+    try {
+      const res = await API.get("/laboratories");
+      const data = res.data.data?.laboratories || [];
+      setLaboratories(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const chargerEquipment = async () => {
     try {
       const res = await API.get(`/equipment/${id}`);
-      const item = res.data.data || res.data;
+      const eq = res.data.data || res.data;
 
-      setNom(item.nom || "");
-      setModele(item.modele || "nouveau");
-      setDescription(item.description || "");
+      setNom(eq.nom || "");
+      setModele(eq.modele || "");
+      setDescription(eq.description || "");
+      setLaboratoryId(eq.LaboratoryId || "");
     } catch (error) {
-      console.log("Erreur chargement :", error.response?.data);
       setErreur("Impossible de charger l'équipement");
     }
   };
 
-  useEffect(() => {
-    if (id) {
-      fetchEquipment();
-    }
-  }, [id]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErreur("");
+    setSuccess("");
 
-    if (!nom.trim()) {
+    const data = {
+      nom,
+      modele,
+      description,
+      LaboratoryId: laboratoryId,
+    };
+
+    if (!nom) {
       setErreur("Le nom est obligatoire");
       return;
     }
 
-    const body = {
-      nom,
-      modele,
-      description,
-    };
-
-    console.log("Données envoyées :", body);
-
     try {
       if (id) {
-        const res = await API.put(`/equipment/${id}`, body);
-        console.log("Update success :", res.data);
+        await API.put(`/equipment/${id}`, data);
+        setSuccess("Équipement modifié avec succès");
       } else {
-        const res = await API.post("/equipment", body);
-        console.log("Create success :", res.data);
+        await API.post("/equipment", data);
+        setSuccess("Équipement ajouté avec succès");
       }
 
-      navigate("/equipment");
+      setTimeout(() => {
+        navigate("/equipment");
+      }, 900);
     } catch (error) {
-      console.log("Erreur enregistrement :", error.response?.data);
-      setErreur(
-        error.response?.data?.message ||
-          error.response?.data?.errors?.[0]?.msg ||
-          "Erreur lors de l'enregistrement"
-      );
+      setErreur("Erreur lors de l'enregistrement");
     }
   };
 
   return (
-    <div className="form-wrapper">
-      <form onSubmit={handleSubmit} className="form-card">
-        <h2>{id ? "Modifier l'équipement" : "Ajouter un équipement"}</h2>
+    <div className="crud-page">
+      <div className="crud-container">
+        <div className="crud-header">
+          <h1>{id ? "Modifier un équipement" : "Ajouter un équipement"}</h1>
+          <p>Remplissez les informations de l'équipement.</p>
+        </div>
 
-        {erreur && <p className="error-text">{erreur}</p>}
+        <div className="crud-card">
+          <form onSubmit={handleSubmit} className="crud-form">
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Nom</label>
+                <input
+                  type="text"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  placeholder="Nom de l'équipement"
+                />
+              </div>
 
-        <input
-          type="text"
-          placeholder="Nom"
-          value={nom}
-          onChange={(e) => setNom(e.target.value)}
-          className="input-control"
-          required
-        />
+              <div className="form-group">
+                <label>Modèle</label>
+                <input
+                  type="text"
+                  value={modele}
+                  onChange={(e) => setModele(e.target.value)}
+                  placeholder="Modèle"
+                />
+              </div>
 
-        <select
-          value={modele}
-          onChange={(e) => setModele(e.target.value)}
-          className="input-control"
-        >
-          <option value="nouveau">nouveau</option>
-          <option value="ancien">ancien</option>
-          <option value="refait">refait</option>
-        </select>
+              <div className="form-group">
+                <label>Laboratoire</label>
+                <select
+                  value={laboratoryId}
+                  onChange={(e) => setLaboratoryId(e.target.value)}
+                >
+                  <option value="">Choisir un laboratoire</option>
+                  {laboratories.map((lab) => (
+                    <option key={lab.id} value={lab.id}>
+                      {lab.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="input-control"
-          rows="4"
-        />
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  rows="4"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Description"
+                />
+              </div>
+            </div>
 
-        <button type="submit" className="btn-primary">
-          {id ? "Mettre à jour" : "Ajouter"}
-        </button>
-      </form>
+            {erreur && <div className="alert alert-error">{erreur}</div>}
+            {success && <div className="alert alert-success">{success}</div>}
+
+            <div className="crud-actions">
+              <button className="btn btn-primary">
+                {id ? "Modifier" : "Ajouter"}
+              </button>
+
+              <Link to="/equipment" className="btn btn-secondary">
+                Annuler
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

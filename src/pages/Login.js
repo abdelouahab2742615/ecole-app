@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function Login() {
@@ -19,8 +19,6 @@ function Login() {
         mot_de_passe: motDePasse,
       });
 
-      console.log("Success:", response.data);
-
       const token =
         response.data.token ||
         response.data.data?.token ||
@@ -33,7 +31,6 @@ function Login() {
       }
 
       localStorage.setItem("token", token);
-
       navigate("/departments");
     } catch (error) {
       setErreur(
@@ -41,80 +38,58 @@ function Login() {
           error.response?.data?.errors?.[0]?.msg ||
           "Email ou mot de passe incorrect"
       );
-
-      console.log("Erreur:", error.response?.data);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <form onSubmit={handleSubmit} style={styles.card}>
-        <h2>Connexion</h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-header">
+          <h1>Connexion</h1>
+          <p>Connecte-toi à ton espace pour gérer l'application.</p>
+        </div>
 
-        {erreur && <p style={styles.error}>{erreur}</p>}
+        <form onSubmit={handleSubmit} className="auth-form">
+          {erreur && <div className="alert alert-error">{erreur}</div>}
 
-        <input
-          type="email"
-          placeholder="E-mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={styles.input}
-          required
-        />
+          <div className="form-group">
+            <label htmlFor="email">Adresse e-mail</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="exemple@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          value={motDePasse}
-          onChange={(e) => setMotDePasse(e.target.value)}
-          style={styles.input}
-          required
-        />
+          <div className="form-group">
+            <label htmlFor="password">Mot de passe</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Entrez votre mot de passe"
+              value={motDePasse}
+              onChange={(e) => setMotDePasse(e.target.value)}
+              required
+            />
+          </div>
 
-        <button type="submit" style={styles.button}>
-          Se connecter
-        </button>
-      </form>
+          <button type="submit" className="btn btn-primary btn-block">
+            Se connecter
+          </button>
+        </form>
+
+        <p className="auth-footer">
+          Pas encore de compte ?{" "}
+          <Link to="/register" className="auth-link">
+            Créer un compte
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#f3f4f6",
-  },
-  card: {
-    background: "white",
-    padding: "30px",
-    borderRadius: "12px",
-    width: "350px",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
-  },
-  input: {
-    width: "100%",
-    marginBottom: "15px",
-    padding: "10px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-    boxSizing: "border-box",
-  },
-  button: {
-    width: "100%",
-    padding: "10px",
-    border: "none",
-    borderRadius: "8px",
-    background: "#2563eb",
-    color: "white",
-    cursor: "pointer",
-  },
-  error: {
-    color: "red",
-    marginBottom: "10px",
-  }
-};
 
 export default Login;

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import API from "../services/api";
 
 function Register() {
@@ -16,7 +17,7 @@ function Register() {
     setSuccess("");
 
     try {
-      const response = await API.post("/users", {
+      await API.post("/users", {
         nom,
         prenom,
         email,
@@ -25,88 +26,105 @@ function Register() {
       });
 
       setSuccess("Utilisateur créé avec succès");
-      console.log("Success:", response.data);
-
-      // reset formulaire (optionnel mais pro)
       setNom("");
       setPrenom("");
       setEmail("");
       setPassword("");
       setDateNaissance("");
-
     } catch (error) {
       setErreur(
         error.response?.data?.message ||
-        error.response?.data?.errors?.[0]?.msg ||
-        "Erreur d'inscription"
+          error.response?.data?.errors?.[0]?.msg ||
+          "Erreur d'inscription"
       );
-
-      console.log("Erreur:", error.response?.data);
     }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "auto" }}>
-      <h2>Inscription</h2>
-
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Nom :</label>
-          <input
-            type="text"
-            value={nom}
-            onChange={(e) => setNom(e.target.value)}
-            required
-          />
+    <div className="auth-page">
+      <div className="auth-card auth-card-register">
+        <div className="auth-header">
+          <h1>Inscription</h1>
+          <p>Crée un compte pour accéder à l'application.</p>
         </div>
 
-        <div>
-          <label>Prénom :</label>
-          <input
-            type="text"
-            value={prenom}
-            onChange={(e) => setPrenom(e.target.value)}
-            required
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="auth-form">
+          {erreur && <div className="alert alert-error">{erreur}</div>}
+          {success && <div className="alert alert-success">{success}</div>}
 
-        <div>
-          <label>Email :</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="nom">Nom</label>
+              <input
+                id="nom"
+                type="text"
+                placeholder="Votre nom"
+                value={nom}
+                onChange={(e) => setNom(e.target.value)}
+                required
+              />
+            </div>
 
-        <div>
-          <label>Mot de passe :</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+            <div className="form-group">
+              <label htmlFor="prenom">Prénom</label>
+              <input
+                id="prenom"
+                type="text"
+                placeholder="Votre prénom"
+                value={prenom}
+                onChange={(e) => setPrenom(e.target.value)}
+                required
+              />
+            </div>
+          </div>
 
-        <div>
-          <label>Date de naissance :</label>
-          <input
-            type="date"
-            value={dateNaissance}
-            onChange={(e) => setDateNaissance(e.target.value)}
-            required
-          />
-        </div>
+          <div className="form-group">
+            <label htmlFor="register-email">Adresse e-mail</label>
+            <input
+              id="register-email"
+              type="email"
+              placeholder="exemple@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
 
-        {erreur && <p style={{ color: "red" }}>{erreur}</p>}
-        {success && <p style={{ color: "green" }}>{success}</p>}
+          <div className="form-group">
+            <label htmlFor="register-password">Mot de passe</label>
+            <input
+              id="register-password"
+              type="password"
+              placeholder="Entrez un mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-        <button type="submit" style={{ marginTop: "10px" }}>
-          S'inscrire
-        </button>
-      </form>
+          <div className="form-group">
+            <label htmlFor="dateNaissance">Date de naissance</label>
+            <input
+              id="dateNaissance"
+              type="date"
+              value={dateNaissance}
+              onChange={(e) => setDateNaissance(e.target.value)}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary btn-block">
+            S'inscrire
+          </button>
+        </form>
+
+        <p className="auth-footer">
+          Tu as déjà un compte ?{" "}
+          <Link to="/login" className="auth-link">
+            Se connecter
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

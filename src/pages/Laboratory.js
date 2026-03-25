@@ -5,16 +5,18 @@ function Laboratory() {
   const [labs, setLabs] = useState([]);
   const [form, setForm] = useState({
     nom: "",
-    salle: ""
+    salle: "",
   });
   const [editId, setEditId] = useState(null);
+  const [erreur, setErreur] = useState("");
+  const [success, setSuccess] = useState("");
 
   const token = localStorage.getItem("token");
 
   const config = {
     headers: {
-      Authorization: `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   };
 
   useEffect(() => {
@@ -23,112 +25,185 @@ function Laboratory() {
 
   const chargerLabs = async () => {
     try {
+      setErreur("");
       const res = await axios.get("http://localhost:5000/api/laboratories", config);
-      setLabs(res.data.data.laboratories);
+      setLabs(res.data.data.laboratories || []);
     } catch (error) {
-      console.log(error.response);
+      setErreur("Erreur lors du chargement des laboratoires");
     }
   };
 
   const handleChange = (e) => {
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
+  };
+
+  const resetForm = () => {
+    setForm({
+      nom: "",
+      salle: "",
+    });
+    setEditId(null);
+    setErreur("");
+    setSuccess("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErreur("");
+    setSuccess("");
 
     try {
       if (editId) {
-        await axios.put(`http://localhost:5000/api/laboratories/${editId}`, form, config);
+        await axios.put(
+          `http://localhost:5000/api/laboratories/${editId}`,
+          form,
+          config
+        );
+        setSuccess("Laboratoire modifié avec succès");
       } else {
         await axios.post("http://localhost:5000/api/laboratories", form, config);
+        setSuccess("Laboratoire ajouté avec succès");
       }
 
-      setForm({
-        nom: "",
-        salle: ""
-      });
-
-      setEditId(null);
+      resetForm();
       chargerLabs();
     } catch (error) {
-      console.log(error.response);
+      setErreur("Erreur lors de l'ajout ou de la modification");
     }
   };
 
   const handleEdit = (lab) => {
     setForm({
       nom: lab.nom,
-      salle: lab.salle
+      salle: lab.salle,
     });
     setEditId(lab.id);
+    setErreur("");
+    setSuccess("");
   };
 
   const handleDelete = async (id) => {
+    const ok = window.confirm("Voulez-vous vraiment supprimer ce laboratoire ?");
+    if (!ok) return;
+
     try {
       await axios.delete(`http://localhost:5000/api/laboratories/${id}`, config);
+      setSuccess("Laboratoire supprimé avec succès");
       chargerLabs();
     } catch (error) {
-      console.log(error.response);
+      setErreur("Erreur lors de la suppression");
     }
   };
 
   return (
-    <div>
-      <h2>Laboratoires</h2>
+    <div className="crud-page">
+      <div className="crud-container">
+        <div className="crud-header">
+          <h1>Laboratoires</h1>
+          <p>Ajoutez, modifiez et supprimez les laboratoires facilement.</p>
+        </div>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="nom"
-          placeholder="Nom"
-          value={form.nom}
-          onChange={handleChange}
-        />
+        <div className="crud-card">
+          <h2>{editId ? "Modifier un laboratoire" : "Ajouter un laboratoire"}</h2>
 
-        <input
-          type="text"
-          name="salle"
-          placeholder="Salle"
-          value={form.salle}
-          onChange={handleChange}
-        />
+          <form onSubmit={handleSubmit} className="crud-form">
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Nom</label>
+                <input
+                  type="text"
+                  name="nom"
+                  placeholder="Nom"
+                  value={form.nom}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-        <button type="submit">
-          {editId ? "Modifier" : "Ajouter"}
-        </button>
-      </form>
+              <div className="form-group">
+                <label>Salle</label>
+                <input
+                  type="text"
+                  name="salle"
+                  placeholder="Salle"
+                  value={form.salle}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
 
-      <table border="1">
-        <thead>
-          <tr>
-            <th>IDENTIFIANT</th>
-            <th>Nom</th>
-            <th>Salle</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {labs.map((lab) => (
-            <tr key={lab.id}>
-              <td>{lab.id}</td>
-              <td>{lab.nom}</td>
-              <td>{lab.salle}</td>
-              <td>
-                <button type="button" onClick={() => handleEdit(lab)}>
-                  Modifier
+            {erreur && <div className="alert alert-error">{erreur}</div>}
+            {success && <div className="alert alert-success">{success}</div>}
+
+            <div className="crud-actions">
+              <button type="submit" className="btn btn-primary">
+                {editId ? "Modifier" : "Ajouter"}
+              </button>
+
+              {editId && (
+                <button type="button" onClick={resetForm} className="btn btn-secondary">
+                  Annuler
                 </button>
-                <button type="button" onClick={() => handleDelete(lab.id)}>
-                  Supprimer
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              )}
+            </div>
+          </form>
+        </div>
+
+        <div className="crud-card">
+          <div className="section-title">
+            <h2>Liste des laboratoires</h2>
+            <span className="badge-count">{labs.length}</span>
+          </div>
+
+          {labs.length === 0 ? (
+            <div className="empty-state">Aucun laboratoire trouvé.</div>
+          ) : (
+            <div className="table-wrapper">
+              <table className="modern-table">
+                <thead>
+                  <tr>
+                    <th>Identifiant</th>
+                    <th>Nom</th>
+                    <th>Salle</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {labs.map((lab) => (
+                    <tr key={lab.id}>
+                      <td>{lab.id}</td>
+                      <td>{lab.nom}</td>
+                      <td>{lab.salle}</td>
+                      <td>
+                        <div className="table-actions">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(lab)}
+                            className="btn btn-warning btn-xs"
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(lab.id)}
+                            className="btn btn-danger btn-xs"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
