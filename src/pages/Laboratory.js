@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "./CrudPage.css";
 
 function Laboratory() {
   const [labs, setLabs] = useState([]);
@@ -26,10 +27,30 @@ function Laboratory() {
   const chargerLabs = async () => {
     try {
       setErreur("");
-      const res = await axios.get("http://localhost:5000/api/laboratories", config);
-      setLabs(res.data.data.laboratories || []);
+      const res = await axios.get(
+        "http://localhost:5000/api/laboratories",
+        config
+      );
+
+      console.log("Réponse laboratoires :", res.data);
+
+      const data =
+        res.data?.data?.laboratories ||
+        res.data?.data ||
+        res.data?.laboratories ||
+        res.data ||
+        [];
+
+      setLabs(Array.isArray(data) ? data : []);
     } catch (error) {
-      setErreur("Erreur lors du chargement des laboratoires");
+      console.log(
+        "Erreur chargement laboratoires :",
+        error.response?.data || error
+      );
+      setErreur(
+        error.response?.data?.message ||
+          "Erreur lors du chargement des laboratoires"
+      );
     }
   };
 
@@ -56,6 +77,8 @@ function Laboratory() {
     setSuccess("");
 
     try {
+      console.log("Données envoyées laboratoire :", form);
+
       if (editId) {
         await axios.put(
           `http://localhost:5000/api/laboratories/${editId}`,
@@ -64,21 +87,33 @@ function Laboratory() {
         );
         setSuccess("Laboratoire modifié avec succès");
       } else {
-        await axios.post("http://localhost:5000/api/laboratories", form, config);
+        await axios.post(
+          "http://localhost:5000/api/laboratories",
+          form,
+          config
+        );
         setSuccess("Laboratoire ajouté avec succès");
       }
 
       resetForm();
       chargerLabs();
     } catch (error) {
-      setErreur("Erreur lors de l'ajout ou de la modification");
+      console.log(
+        "Erreur ajout/modification laboratoire :",
+        error.response?.data || error
+      );
+      setErreur(
+        error.response?.data?.message ||
+          error.response?.data?.errors?.[0]?.msg ||
+          "Erreur lors de l'ajout ou de la modification"
+      );
     }
   };
 
   const handleEdit = (lab) => {
     setForm({
-      nom: lab.nom,
-      salle: lab.salle,
+      nom: lab.nom || "",
+      salle: lab.salle || "",
     });
     setEditId(lab.id);
     setErreur("");
@@ -94,7 +129,10 @@ function Laboratory() {
       setSuccess("Laboratoire supprimé avec succès");
       chargerLabs();
     } catch (error) {
-      setErreur("Erreur lors de la suppression");
+      console.log("Erreur suppression laboratoire :", error.response?.data || error);
+      setErreur(
+        error.response?.data?.message || "Erreur lors de la suppression"
+      );
     }
   };
 
@@ -145,7 +183,11 @@ function Laboratory() {
               </button>
 
               {editId && (
-                <button type="button" onClick={resetForm} className="btn btn-secondary">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="btn btn-secondary"
+                >
                   Annuler
                 </button>
               )}

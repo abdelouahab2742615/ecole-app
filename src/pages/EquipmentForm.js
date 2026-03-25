@@ -18,30 +18,50 @@ function EquipmentForm() {
 
   useEffect(() => {
     chargerLaboratoires();
-    if (id) chargerEquipment();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (id) {
+      chargerEquipment();
+    }
   }, [id]);
 
   const chargerLaboratoires = async () => {
     try {
+      setErreur("");
       const res = await API.get("/laboratories");
-      const data = res.data.data?.laboratories || [];
-      setLaboratories(data);
+      console.log("Réponse laboratoires :", res.data);
+
+      const data =
+        res.data?.data?.laboratories ||
+        res.data?.data ||
+        res.data?.laboratories ||
+        res.data ||
+        [];
+
+      setLaboratories(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.log(error);
+      console.log(
+        "Erreur chargement laboratoires :",
+        error.response?.data || error
+      );
+      setErreur("Impossible de charger les laboratoires");
     }
   };
 
   const chargerEquipment = async () => {
     try {
       const res = await API.get(`/equipment/${id}`);
-      const eq = res.data.data || res.data;
+      console.log("Réponse équipement :", res.data);
+
+      const eq = res.data?.data || res.data || {};
 
       setNom(eq.nom || "");
       setModele(eq.modele || "");
       setDescription(eq.description || "");
-      setLaboratoryId(eq.LaboratoryId || "");
+      setLaboratoryId(eq.laboratoryId || eq.LaboratoryId || "");
     } catch (error) {
+      console.log(
+        "Erreur chargement équipement :",
+        error.response?.data || error
+      );
       setErreur("Impossible de charger l'équipement");
     }
   };
@@ -52,18 +72,25 @@ function EquipmentForm() {
     setSuccess("");
 
     const data = {
-      nom,
-      modele,
-      description,
-      LaboratoryId: laboratoryId,
+      nom: nom.trim(),
+      modele: modele.trim(),
+      description: description.trim(),
+      laboratoryId: laboratoryId,
     };
 
-    if (!nom) {
+    if (!data.nom) {
       setErreur("Le nom est obligatoire");
       return;
     }
 
+    if (!data.laboratoryId) {
+      setErreur("Le laboratoire est obligatoire");
+      return;
+    }
+
     try {
+      console.log("Données envoyées équipement :", data);
+
       if (id) {
         await API.put(`/equipment/${id}`, data);
         setSuccess("Équipement modifié avec succès");
@@ -76,7 +103,16 @@ function EquipmentForm() {
         navigate("/equipment");
       }, 900);
     } catch (error) {
-      setErreur("Erreur lors de l'enregistrement");
+      console.log(
+        "Erreur enregistrement équipement :",
+        error.response?.data || error
+      );
+
+      setErreur(
+        error.response?.data?.message ||
+          error.response?.data?.errors?.[0]?.msg ||
+          "Erreur lors de l'enregistrement"
+      );
     }
   };
 
@@ -141,7 +177,7 @@ function EquipmentForm() {
             {success && <div className="alert alert-success">{success}</div>}
 
             <div className="crud-actions">
-              <button className="btn btn-primary">
+              <button type="submit" className="btn btn-primary">
                 {id ? "Modifier" : "Ajouter"}
               </button>
 
