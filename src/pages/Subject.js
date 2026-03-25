@@ -26,7 +26,7 @@ function Subject() {
       const res = await axios.get("http://localhost:5000/api/subjects", config);
       setSubjects(res.data.data.subjects);
     } catch (error) {
-      console.log(error.response);
+      console.log("Erreur chargement :", error.response || error.message);
     }
   };
 
@@ -55,7 +55,7 @@ function Subject() {
       setEditId(null);
       chargerSubjects();
     } catch (error) {
-      console.log(error.response);
+      console.log("Erreur ajout/modification :", error.response || error.message);
     }
   };
 
@@ -64,15 +64,19 @@ function Subject() {
       nom: subject.nom,
       code: subject.code
     });
-    setEditId(subject.id);
+
+    setEditId(subject.id || subject._id);
   };
 
   const handleDelete = async (id) => {
     try {
+      console.log("ID à supprimer :", id);
+
       await axios.delete(`http://localhost:5000/api/subjects/${id}`, config);
-      chargerSubjects();
+
+      setSubjects(subjects.filter((subject) => (subject.id || subject._id) !== id));
     } catch (error) {
-      console.log(error.response);
+      console.log("Erreur suppression :", error.response || error.message);
     }
   };
 
@@ -112,21 +116,25 @@ function Subject() {
           </tr>
         </thead>
         <tbody>
-          {subjects.map((s) => (
-            <tr key={s.id}>
-              <td>{s.id}</td>
-              <td>{s.nom}</td>
-              <td>{s.code}</td>
-              <td>
-                <button type="button" onClick={() => handleEdit(s)}>
-                  Modifier
-                </button>
-                <button type="button" onClick={() => handleDelete(s.id)}>
-                  Supprimer
-                </button>
-              </td>
-            </tr>
-          ))}
+          {subjects.map((s) => {
+            const subjectId = s.id || s._id;
+
+            return (
+              <tr key={subjectId}>
+                <td>{subjectId}</td>
+                <td>{s.nom}</td>
+                <td>{s.code}</td>
+                <td>
+                  <button type="button" onClick={() => handleEdit(s)}>
+                    Modifier
+                  </button>
+                  <button type="button" onClick={() => handleDelete(subjectId)}>
+                    Supprimer
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
