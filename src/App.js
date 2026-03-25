@@ -1,25 +1,34 @@
-import React, { useState } from "react";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Department from "./pages/Department";
 
 function App() {
-  const [page, setPage] = useState("login");
-
   return (
-    <div>
-      <button onClick={() => setPage("login")}>Se connecter</button>
-      <button onClick={() => setPage("register")}>Registre</button>
-      <button onClick={() => setPage("department")}>Départements</button>
+    <BrowserRouter>
+      <div>
+        <Link to="/login">
+          <button>Se connecter</button>
+        </Link>
 
-      {page === "login" ? (
-        <Login onLoginSuccess={() => setPage("department")} />
-      ) : page === "register" ? (
-        <Register />
-      ) : (
-        <Department />
-      )}
-    </div>
+        <Link to="/register">
+          <button>Registre</button>
+        </Link>
+
+        <Link to="/departments">
+          <button>Départements</button>
+        </Link>
+      </div>
+
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/departments" element={<Department />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
